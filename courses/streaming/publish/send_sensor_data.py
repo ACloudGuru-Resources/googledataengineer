@@ -30,11 +30,11 @@ def publish(publisher, topic, events):
    if numobs > 0:
        logging.info('Publishing {} events from {}'.format(numobs, get_timestamp(events[0])))
        for event_data in events:
-         publisher.publish(topic,event_data.encode())
+         publisher.publish(topic,event_data)
 
 def get_timestamp(line):
    # look at first field of row
-   timestamp = line.split(',')[0]
+   timestamp = line.decode('utf8').strip('\n').split(',')[0]
    return datetime.datetime.strptime(timestamp, TIME_FORMAT)
 
 def simulate(topic, ifp, firstObsTime, programStart, speedFactor):
@@ -86,10 +86,10 @@ if __name__ == '__main__':
    publisher = pubsub.PublisherClient()
    event_type = publisher.topic_path(args.project,TOPIC)
    try:
-      publisher.get_topic(event_type)
+      publisher.get_topic(request={"topic": event_type})
       logging.info('Reusing pub/sub topic {}'.format(TOPIC))
    except:
-      publisher.create_topic(event_type)
+      publisher.create_topic(request={"name": event_type})
       logging.info('Creating pub/sub topic {}'.format(TOPIC))
 
    # notify about each line in the input file
